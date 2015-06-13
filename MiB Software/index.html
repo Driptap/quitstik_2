@@ -1,0 +1,88 @@
+<html>
+  <meta charset="UTF-8"/>
+  <head>
+  <title>Vapers Cloud</title>
+  <link href='http://fonts.googleapis.com/css?family=Poiret+One|Montserrat+Alternates:400,700' rel='stylesheet' type='text/css'> 
+  <link rel="stylesheet" type="text/css" href="css/styles.css">
+  </head>
+  <body>
+<div class="container">
+  <div id="header">
+    <div id="connectedStatus">    
+      <img src="images/disconnected_icon.png"/>
+    </div>
+    <h1>QuitStik</h1>
+  </div>
+  <div id="splash">
+    <h1>QuitStik</h1>
+  </div>
+  <!-- Enter your name -->
+  <div id="name">
+    <h2>It looks like this is the first time you've used your QuitStik!</h2>
+    <h2><h>What's your name?</h></h2>
+    <input type="text" id="resizer"/>
+    <h2><h>How many cigarettes do you smoke a day ?</h></h2>
+    <div id="cigs"><input type="text" id="resizer"/></div>
+    <button data-label="save!">enter</button>
+  </div>
+  <!-- Connect to the QuitStik -->
+  <div id="quitstik">
+    <h2>No connected QuitStik was found!</h2>
+    <h2><h>Which is your QuitStik?</h></h2>
+    <p>Please refer do the documentation if you cannot find your device</p>
+
+    <div class="dropdown" for="comPorts">
+      <select name="comPorts" id="comPorts">
+       
+      </select>
+    </div>
+  
+    <button id="connect" data-label="connect!">connect</button>
+  </div>
+  <div id="graphs">
+        <div class="graphContainer">
+          <h1></h1>
+          <h4>puffs</h4>
+          <canvas id="targetGraph" width="600px" height="420px"></canvas>
+          <span><div class="box" id="todayMain"></div>TODAY's </span>
+              
+          <span class="span2" id="targetsMain"><div class="box"></div>TARGETS</span>
+      </div> 
+      
+        <div class="graphContainer2">
+          <canvas id="vapeGraph" width="600px" height="420px"></canvas>
+        </div>
+    </div>
+    <div id="numbers">
+      <div class="left">
+        <ul id="todays">
+          <li>Todays</li>
+          <li>Cigs</li>
+          <li>Nicotine</li>
+          <li>Duration</li>
+         </ul>
+      </div>
+      <div class="right">
+        <ul id="target">
+          <li>Targets</li>
+          <li>Cigs</li>
+          <li>Nicotine</li>
+          <li>Duration</li>
+         </ul>
+      </div>
+      <div class="bottom">
+        <h1> Cool, £29.22!! figure </h1>
+       </div>
+  </div>
+  <div id="dash">
+    <h1>0</h1><div id='smokeSpawnPoint'></div><h4>puffs</h4><button id='showTargets' data-label='Targets'>Targets</button><br/><br/><button id='showStats' data-label='Statistics'>Statistics</button>
+</div>
+</body>
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+  <script type="text/javascript" src='js/chart.min.js'></script>
+  <script type="text/javascript" src='js/papaparse.min.js'></script>
+  <script type="text/javascript" src="js/date-en-GB.js"></script>
+  <script type="text/javascript" src='js/smokeEffect.js'></script>
+  <script type="text/javascript" src='js/quitStik_2.js'></script>
+
+</html>

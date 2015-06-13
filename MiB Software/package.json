@@ -1,0 +1,22 @@
+{
+	"name" : "Vapers_Cloud",
+	"version" : "0.0.3",
+	"description" : "Desktop client for the QuitStik smart ecigarette",
+	"main" : "index.html",
+	"scripts" : 
+		{
+			"test" : "echo \"Error: no test specified\" && exit 1"
+		},
+	"author" : "Sinan Guclu",
+	"window": {
+		"toolbar" : true,
+		"width" : 640,
+		"height" : 960
+	},
+	"dependencies": {
+  	},
+  	"repositories":{
+  		
+  	}
+
+}
