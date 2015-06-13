@@ -82,7 +82,7 @@ $(document).ready(function(){
           // Parses json vapes into vapes array and fire target calculation
           vapes = JSON.parse(data);
           calculateVapeStats(vapes);
-          $('#dash').html("<h1>" + vapeStats.puffsToday + "</h1><div id='smokeSpawnPoint'></div><h4>puffs</h4><button id='showTargets' data-label='Targets'>Targets</button><br/><br/><button id='showStats' data-label='Statistics'>Statistics</button>");
+          populateDash();
         }
         /// Connects to quit stik
         connectToQuitstik(user);
@@ -138,15 +138,21 @@ $("#quitButton").click(function() {
   var win = gui.Window.get();
   win.close();
 });
+// Event listener on button to show targets screen
 $("#showTargets").click(function(e){
   e.preventDefault();
   showGraphs();
 });
+// Event listener on button to show statistics screen
 $("#showStats").click(function(e){
   e.preventDefault();
   showStats();
 });
-
+// Function populates dashboard with latest vape data
+function populateDash() {
+  showDash();
+  $('#dash > h1').text(parseFloat(vapeStats.puffsToday));
+}
 function connectToQuitstik(user) {
   var ports;
   serialport.list(function (err, ports) {
@@ -261,8 +267,7 @@ function connectToPort(port_i, ports){
           SmokeEffect.makeEffect("smokeSpawnPoint", config.vape_duration_cutoff, 30);
           //
           $('.graphContainer > h1').text(vapeStats.puffsToday);
-          $('#dash').html("<h1>" + parseFloat(vapeStats.puffsToday) + "</h1><div id='smokeSpawnPoint'></div><h4>puffs</h4><button href='#' id='showTargets' data-label='Targets'>Targets</button><br/><br/><button id='showStats' href='#' data-label='Statistics'>Statistics</button>");
-          
+          populateDash();
           $('#showTargets').on('click', function(){
             showGraphs();
           });
@@ -276,7 +281,8 @@ function connectToPort(port_i, ports){
       }
     );
   });
-};// Returns an array of vape objects from the past 5 days, starting yesterday
+};
+// Returns an array of vape objects from the past 5 days, starting yesterday
 function getLastFiveDays(vapes) {
   var today = new Date();
   var todayDay = today.getDay()
