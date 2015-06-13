@@ -68,6 +68,8 @@ div.target, div.extrapulations {
   padding: 1px 0;
   display: none;
   height: 80px;
+  width: 100%;
+  max-width: 600px;
   -webkit-app-region: draggable;
 }
 #splash {
@@ -307,8 +309,10 @@ ul > li {
 .graphContainer {
   background: #FBC599;
   display: block;
-  width: 640px;
+  width: 100%;
+  max-width: 600px;
   height: 450px;
+  margin: 0 auto;
   position: absolute;
 }
 .graphContainer > h1 {
@@ -326,11 +330,12 @@ ul > li {
   color: #5A4A4A;
 }
 .graphContainer2 {
-  margin-top: 450px;
   background: #CDBB93;
   display: block;
-  width: 640px;
+  width: 100%;
+  max-width: 600px;
   height: 450px;
+  margin: 450px auto 0;
   position: absolute;
 }
 span{
@@ -351,7 +356,7 @@ span{
   background: #335650;
 }
 .span2{
-  left: 490px;
+  left: 400px;
 }
 #graphs {
   display: none;

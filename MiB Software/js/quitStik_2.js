@@ -100,7 +100,7 @@ function hideHeader() { $('#header').hide();}
 // Shows connect to quitstik screen
 function showQuitStik() {  $('#dash').hide(); $('#numbers').hide(); $('#graphs').hide(); $('#quitstik').fadeIn()}
 // Shows targets screen
-function showGraphs() {  showBackBtn(); $('#dash').hide(); $('#numbers').hide(); $('#graphs').fadeIn();showWeeklyVapesGraph();showTargetGraph();}
+function showGraphs() {  showBackBtn(); $('#dash').hide(); $('#numbers').hide(); $('#graphs').fadeIn();showWeeklyVapesGraph();showTargetGraph(); $('.graphContainer > h1').text(vapeStats.puffsToday)}
 // Shows the dash board
 function showDash() {  
   showQuitBtn(); 
@@ -138,10 +138,14 @@ $("#quitButton").click(function() {
   var win = gui.Window.get();
   win.close();
 });
-$("#showTargets").click(function(){
+$("#showTargets").click(function(e){
+  e.preventDefault();
   showGraphs();
 });
-$("#showStats").click(showStats);
+$("#showStats").click(function(e){
+  e.preventDefault();
+  showStats();
+});
 
 function connectToQuitstik(user) {
   var ports;
@@ -476,11 +480,6 @@ function calculateVapeStats(vapes) {
   $('#target').html("<li>Target</li><li>" + Math.round(vapeStats.targetCigarettesPerDay) + " <z>Cigarettes</z> </li><li>" + Math.round(vapeStats.targetNicotineAllowance, 1) + " <z>ug/mg Nicotine</z> </li><li>" + Math.round(vapeStats.targetPuffs) + " <z>Puffs</z> </li>");
 }
 
-
-
-
-
-
 // Shows the pie chart comparing targets to daily use
 function showTargetGraph() {
   var target_graph_data = [
@@ -502,6 +501,7 @@ function showTargetGraph() {
     responsive : true
   });
 };
+
 function showWeeklyVapesGraph() { 
   var currWeeksVapes = getThisWeeks(vapes); 
   //currWeeksVapes.sort 
@@ -516,12 +516,12 @@ function showWeeklyVapesGraph() {
       // adds day label and duration at same index when hour label doesn't exist
       labels.push(new Date(currWeeksVapes[i].vapedAt).toDateString());
       // for puffs
-      durations.push(parseFloat(currWeeksVapes[i].duration) / (vapeStats.averageIndividualVapeDurationLastFiveDays/1000) || 0);
+      durations.push(parseFloat(currWeeksVapes[i].duration) / (vapeStats.todaysAverageVapeDuration/1000) || 0);
     } else {
       // adds duration to duration at index of corresponding label
       var vapesDay = new Date(currWeeksVapes[i].vapedAt).toDateString();
       var duration = labels.indexOf(vapesDay);
-      durations[duration] = durations[duration] + parseFloat(currWeeksVapes[i].duration) / (vapeStats.averageIndividualVapeDurationLastFiveDays/1000) || 0; 
+      durations[duration] = parseInt(durations[duration] + parseFloat(currWeeksVapes[i].duration) / (vapeStats.todaysAverageVapeDuration/1000) || 0); 
     }
   }
   var barChartData = {
