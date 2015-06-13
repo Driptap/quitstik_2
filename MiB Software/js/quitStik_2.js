@@ -4,12 +4,33 @@
       Author:  Sinan Guclu  
 */
 path = require('path');
+
+var gui = require('nw.gui');
+
 var serialport = require(path.join(process.cwd(),"/node_modules/serialport"));
 var SerialPort = serialport.SerialPort;
 var fs = require('fs');
 var vapes = [];
 var user = {};
-var vapeStats = {};
+vapeStats = {
+    "todaysVapingDuration" : 0,
+    "todaysAverageVapeDuration" : 0,
+    "adjustedCigaretteNicotine" : 0,
+    "nicotineToday" : 0,
+    "cigarettesToday" : 0,
+    "puffsToday" : 0,
+    "targetPuffs" : 0,
+    "targetCigarettesPerDay" : 0,
+    "targetNicotineAllowance" : 0,
+    "targetVapingDuration" : 0,
+    "baselineCigarettesPerDay" : 0,
+    "maximumCigarettesPerDay" : 0,
+    "baselineNicotinePerDay" : 0,
+    "maximumNicotinePerDay" : 0,
+    "baselineVapingDuration" : 0,
+    "maximumVapingDuration" : 0,
+    "savingsFromVapes" : 0
+  }
 var newVapeStats = {};
 // API configuration data (To be put into a json file)
 var config = {
@@ -28,7 +49,9 @@ var config = {
     // Nicotine absorbed from one seconds of using an ecigarette in ng/ml
     nicotinePerSecondVape: 0.175,
     // number between 1 and 2, 2 being the strictest
-    target_division : 1.25
+    target_division : 1.25,
+    // The price of twenty cigarettes
+    cigarette_pack_price: 8.60
   }
 };
 // Start point
@@ -60,9 +83,6 @@ $(document).ready(function(){
           vapes = JSON.parse(data);
           calculateVapeStats(vapes);
           $('#dash').html("<h1>" + vapeStats.puffsToday + "</h1><div id='smokeSpawnPoint'></div><h4>puffs</h4><button id='showTargets' data-label='Targets'>Targets</button><br/><br/><button id='showStats' data-label='Statistics'>Statistics</button>");
-          $('button#showTargets').click(showGraphs());
-          $('button#showStats').click(showStats());
-          $('button#showStats').click(showDash());
         }
         /// Connects to quit stik
         connectToQuitstik(user);
@@ -71,20 +91,57 @@ $(document).ready(function(){
   });
 });
 // UI manipulation functions
+// hides the splash screen
 function hideSplash() { $('#splash').hide();}
+// Shows header of the a[[]]
 function showHeader() { $('#header').fadeIn();}
+// Hides the header
 function hideHeader() { $('#header').hide();}
-function showQuitStik() { $('#dash').hide(); $('#numbers').hide(); $('#graphs').hide(); $('#quitstik').fadeIn()}
-function showGraphs() {  $('#dash').hide(); $('#numbers').hide(); $('#graphs').fadeIn();showWeeklyVapesGraph();showTargetGraph();}
-function showDash() {  $('#graphs').hide(); $('#numbers').hide(); $('#dash').fadeIn();}
+// Shows connect to quitstik screen
+function showQuitStik() {  $('#dash').hide(); $('#numbers').hide(); $('#graphs').hide(); $('#quitstik').fadeIn()}
+// Shows targets screen
+function showGraphs() {  showBackBtn(); $('#dash').hide(); $('#numbers').hide(); $('#graphs').fadeIn();showWeeklyVapesGraph();showTargetGraph();}
+// Shows the dash board
+function showDash() {  
+  showQuitBtn(); 
+  $('#graphs').hide(); 
+  $('#numbers').hide(); 
+  $('#dash').fadeIn();
+}
+// Shows statistics page
 function showStats() { 
+  showBackBtn();
   calculateVapeStats(vapes);
   $('#dash').hide(); 
   $('#graphs').hide(); 
   $('#numbers').fadeIn();         
   $('#todays').html("<li>Todays</li><li>" + Math.round(vapeStats.cigarettesToday) + " <z>Cigarettes </z></li><li>" + Math.round(vapeStats.nicotineToday, 1) + " <z>ug/mg Nicotine</z> </li><li>" + Math.round(vapeStats.puffsToday) + " <z>Puffs</z> </li>");
   $('#target').html("<li>Target</li><li>" + Math.round(vapeStats.targetCigarettesPerDay, 1) + " <z>Cigarettes</z> </li><li>" + Math.round(vapeStats.targetNicotineAllowance, 1) + " <z>ug/mg Nicotine</z> </li><li>" + Math.round(vapeStats.targetPuffs) + " <z>Puffs</z> </li>");
+  $('.bottom > h1').text("You've saved £" + vapeStats.savingsFromVapes + " since quitting!")
 }
+//Show quit button & hides back button
+function showQuitBtn() {
+  $('#backButton').hide();
+  $('#quitButton').show();
+}
+//Show back button & hides quit button
+function showBackBtn(){
+  $('#quitButton').hide();
+  $('#backButton').show();
+}
+// Returns to home screen from other screens
+$("#backButton").click(function(){
+  showDash();
+});
+// Quit function 
+$("#quitButton").click(function() {
+  var win = gui.Window.get();
+  win.close();
+});
+$("#showTargets").click(function(){
+  showGraphs();
+});
+$("#showStats").click(showStats);
 
 function connectToQuitstik(user) {
   var ports;
@@ -200,12 +257,12 @@ function connectToPort(port_i, ports){
           SmokeEffect.makeEffect("smokeSpawnPoint", config.vape_duration_cutoff, 30);
           //
           $('.graphContainer > h1').text(vapeStats.puffsToday);
-          $('#dash').html("<h1>" + parseFloat(vapeStats.puffsToday) + "</h1><div id='smokeSpawnPoint'></div><h4>puffs</h4><button id='showTargets' data-label='Targets'>Targets</button><br/><br/><button id='showStats' data-label='Statistics'>Statistics</button>");
+          $('#dash').html("<h1>" + parseFloat(vapeStats.puffsToday) + "</h1><div id='smokeSpawnPoint'></div><h4>puffs</h4><button href='#' id='showTargets' data-label='Targets'>Targets</button><br/><br/><button id='showStats' href='#' data-label='Statistics'>Statistics</button>");
           
-          $('button#showTargets').on('click', function(){
+          $('#showTargets').on('click', function(){
             showGraphs();
           });
-          $('button#showStats').click(function(){
+          $('#showStats').click(function(){
             showStats();
           });
           if (window.targetGraph) {
@@ -286,14 +343,32 @@ function getDaysOfThese(vapes) {
   return days;
 }
 
-
-
+// This function counts all vapes so is only run once per app launch
+var savingsFromVapes = 0;
+var totalCigarettes;
+var totalNicotine;
+function savingsFrom(vapes)  {
+  savingsFromVapes = 0;
+  if(savingsFromVapes !== 0) {
+    return savingsFromVapes;
+  } else {
+    var totalVapeDuration = 0;
+    for (var i = 1, l = vapes.length; i < l; i++){
+      totalVapeDuration = totalVapeDuration + parseInt(vapes[i].duration);
+    }
+    totalNicotine = (totalVapeDuration / 1000) * config.constants.nicotinePerSecondVape;
+    totalCigarettes = totalNicotine / parseFloat(vapeStats.adjustedCigaretteNicotine.toFixed(2) || 22);
+    savingsFromVapes = (totalCigarettes / 20) * config.constants.cigarette_pack_price;
+    return savingsFromVapes;
+  }
+}
 // This function calculates all the related vaping stats
 function calculateVapeStats(vapes) {
   //if(vapes.length <= 0) {return}
   var currDaysVapes = getThisDays(vapes);
   var currWeeksVapes = getThisWeeks(vapes);
   var lastFiveDaysVapes = getLastFiveDays(vapes);
+  var savingsFromVapes = savingsFrom(vapes).toFixed(2);
   // For the total time spent vaping over period
   // Duration in ms of today
   var todaysVapingDuration = 0;
@@ -368,8 +443,6 @@ function calculateVapeStats(vapes) {
   var cigarettesToday = nicotineToday / adjustedCigaretteNicotine ;
   // Puffs today, based on average puff duration
   var puffsToday = todaysVapingDuration / (todaysVapingDuration / currDaysVapes.length);
-  // Global vape stat object updated
-
 
   if (getDaysOfThese(lastFiveDaysVapes).length > 53) {
      // Nicotine sbsorbed last five days
@@ -395,7 +468,8 @@ function calculateVapeStats(vapes) {
     "baselineNicotinePerDay" : baselineNicotinePerDay,
     "maximumNicotinePerDay" : maximumNicotinePerDay,
     "baselineVapingDuration" : baselineVapingDuration,
-    "maximumVapingDuration" : maximumVapingDuration
+    "maximumVapingDuration" : maximumVapingDuration,
+    "savingsFromVapes" : savingsFromVapes
   }
   // Target view updated
   $('#todays').html("<li>Todays</li><li>" + Math.round(vapeStats.cigarettesToday)  + " <z>Cigarettes </z></li><li>" + Math.round(vapeStats.nicotineToday, 1) + " <z>ug/mg Nicotine</z> </li><li>" + Math.round(vapeStats.puffsToday) + " <z>Puffs</z> </li>");
@@ -523,8 +597,7 @@ autoSave(calculateVapeStats, 60 * 1000);
 // Button css control 
 var loading = function(e) {
   e.preventDefault();
-  e
-.stopPropagation();
+  e.stopPropagation();
   e.target.classList.add('loading');
   e.target.setAttribute('disabled','disabled');
   setTimeout(function(){
@@ -536,7 +609,3 @@ var btns = document.querySelectorAll('button');
 for (var i=btns.length-1;i>=0;i--) {
   btns[i].addEventListener('click',loading);
 }
-
-$("#quitButton").click(function() {
-    win.close();
-  });
