@@ -239,12 +239,21 @@ select {
   color: #335650;
 }
 
-#connectedStatus > img {
+#connectedStatus > img, #backButton > img, #quitButton > img {
   width: 60px;
   height: 60px;
   position: absolute;
-  left: 20px;
   top: 20px; 
+}
+#connectedStatus > img {
+  right: 20px;
+}
+#backButton > img {
+  left: 20px;
+  display: none;
+}
+#quitButton > img {
+  left: 20px;
 }
 #numbers {
   display: none;
