@@ -74,7 +74,7 @@ $(document).ready(function(){
 function hideSplash() { $('#splash').hide();}
 function showHeader() { $('#header').fadeIn();}
 function hideHeader() { $('#header').hide();}
-function showQuitStik() { $('#dash').hide(); $('#number').hide(); $('#graphs').hide(); $('#quitstik').fadeIn()}
+function showQuitStik() { $('#dash').hide(); $('#numbers').hide(); $('#graphs').hide(); $('#quitstik').fadeIn()}
 function showGraphs() {  $('#dash').hide(); $('#numbers').hide(); $('#graphs').fadeIn();showWeeklyVapesGraph();showTargetGraph();}
 function showDash() {  $('#graphs').hide(); $('#numbers').hide(); $('#dash').fadeIn();}
 function showStats() { 
@@ -82,8 +82,8 @@ function showStats() {
   $('#dash').hide(); 
   $('#graphs').hide(); 
   $('#numbers').fadeIn();         
-  $('#todays').html("<li>Todays</li><li>" + Math.round(vapeStats.todaysCigarettes) + " <z>Cigarettes </z></li><li>" + Math.round(vapeStats.todaysNicotineAbsorbed, 1) + " <z>ug/mg Nicotine</z> </li><li>" + Math.round(vapeStats.puffsToday) + " <z>Puffs</z> </li>");
-  $('#target').html("<li>Target</li><li>" + Math.round(vapeStats.targetCigarettesDaily) + " <z>Cigarettes</z> </li><li>" + Math.round(vapeStats.targetNicotineAllowance, 1) + " <z>ug/mg Nicotine</z> </li><li>" + Math.round(vapeStats.targetPuffs) + " <z>Puffs</z> </li>");
+  $('#todays').html("<li>Todays</li><li>" + Math.round(vapeStats.cigarettesToday) + " <z>Cigarettes </z></li><li>" + Math.round(vapeStats.nicotineToday, 1) + " <z>ug/mg Nicotine</z> </li><li>" + Math.round(vapeStats.puffsToday) + " <z>Puffs</z> </li>");
+  $('#target').html("<li>Target</li><li>" + Math.round(vapeStats.targetCigarettesPerDay, 1) + " <z>Cigarettes</z> </li><li>" + Math.round(vapeStats.targetNicotineAllowance, 1) + " <z>ug/mg Nicotine</z> </li><li>" + Math.round(vapeStats.targetPuffs) + " <z>Puffs</z> </li>");
 }
 
 function connectToQuitstik(user) {
@@ -220,13 +220,13 @@ function getLastFiveDays(vapes) {
   var today = new Date();
   var todayDay = today.getDay()
   var first = today.getDate() - (todayDay - 1);
-  var last = first - 5;
+  var last = first + 5;
   var firstDay = new Date(today.setDate(first));
   var lastDay = new Date(today.setDate(last));
   var lastFiveDaysVapes = [];
   for(var i = 0; i < vapes.length; i++){
-    if(new Date(vapes[i].vapedAt) >= lastDay){
-      if(new Date(vapes[i].vapedAt) <= firstDay){
+    if(new Date(vapes[i].vapedAt) <= lastDay){
+      if(new Date(vapes[i].vapedAt) >= firstDay){
         lastFiveDaysVapes.push(vapes[i]);
       }
     }
@@ -257,7 +257,7 @@ function getThisDays(vapes) {
   // Gets todays epoch
   var today = new Date();
   // gets difference between last + first day
-  var first = today.getDate() - today.getDay();
+  var first = today.getDate();
   var last = first - 1;
   // Gets epoch for first and last day
   var firstDay = new Date(today.setDate(first));
@@ -285,9 +285,12 @@ function getDaysOfThese(vapes) {
   }
   return days;
 }
+
+
+
 // This function calculates all the related vaping stats
 function calculateVapeStats(vapes) {
-  if(vapes.length <= 0) {return}
+  //if(vapes.length <= 0) {return}
   var currDaysVapes = getThisDays(vapes);
   var currWeeksVapes = getThisWeeks(vapes);
   var lastFiveDaysVapes = getLastFiveDays(vapes);
@@ -373,11 +376,7 @@ function calculateVapeStats(vapes) {
     var nicotineAbsorbedLastFiveDays = (lastFiveDaysVapingDuration / 1000) * config.constants.nicotinePerSecondVape;
     // Adjusted nicotine/cigarette conversion rate
     var adjustedCigaretteNicotine = (nicotineAbsorbedLastFiveDays/5) / user.originalCigarettesDaily;
-
-    var maximumNicotinePerDay = adjustedCigaretteNicotine  ;
-
-   
-
+    var maximumNicotinePerDay = adjustedCigaretteNicotine;
   } 
 
   vapeStats = {
@@ -396,13 +395,18 @@ function calculateVapeStats(vapes) {
     "baselineNicotinePerDay" : baselineNicotinePerDay,
     "maximumNicotinePerDay" : maximumNicotinePerDay,
     "baselineVapingDuration" : baselineVapingDuration,
-    "maximumVapingDuration" : maximumVapingDuration,
-    "old" : "old"
+    "maximumVapingDuration" : maximumVapingDuration
   }
   // Target view updated
   $('#todays').html("<li>Todays</li><li>" + Math.round(vapeStats.cigarettesToday)  + " <z>Cigarettes </z></li><li>" + Math.round(vapeStats.nicotineToday, 1) + " <z>ug/mg Nicotine</z> </li><li>" + Math.round(vapeStats.puffsToday) + " <z>Puffs</z> </li>");
   $('#target').html("<li>Target</li><li>" + Math.round(vapeStats.targetCigarettesPerDay) + " <z>Cigarettes</z> </li><li>" + Math.round(vapeStats.targetNicotineAllowance, 1) + " <z>ug/mg Nicotine</z> </li><li>" + Math.round(vapeStats.targetPuffs) + " <z>Puffs</z> </li>");
 }
+
+
+
+
+
+
 // Shows the pie chart comparing targets to daily use
 function showTargetGraph() {
   var target_graph_data = [
