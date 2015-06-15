@@ -69,8 +69,6 @@ div.target, div.extrapulations {
   display: none;
   height: 80px;
   width: 100%;
-  max-width: 600px;
-  -webkit-app-region: draggable;
 }
 #splash {
   background: #F35F55;

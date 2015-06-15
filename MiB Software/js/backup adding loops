@@ -1,0 +1,42 @@
+// Loops through vapes and totals duration
+  for (var i = 1, l = currDaysVapes.length; i < l; i++){
+    if(new Date(currDaysVapes[i].vapedAt).toDateString() === Date.today().toDateString()){
+      if(isNaN(parseFloat(currWeeksVapes[i].duration)) === false) {  
+        if(config.vapeFilter) {
+          if(parseFloat(currWeeksVapes[i].duration >= config.vape_duration_cutoff)){
+            todaysVapingDuration = todaysVapingDuration + (parseFloat(currDaysVapes[i].duration) || 0);
+          }
+        } else {
+          todaysVapingDuration = todaysVapingDuration + (parseFloat(currDaysVapes[i].duration) || 0);
+        }
+      }
+    }
+  }// Loops through weeks vapes and calculates totals
+  for (var i = 1, l = currWeeksVapes.length; i < l; i++){
+    if(isNaN(parseFloat(currWeeksVapes[i].duration)) === false) {
+      if(config.vapeFilter){ 
+        if(parseFloat(currWeeksVapes[i].duration >= config.vape_duration_cutoff)){   
+          weeksVapingDuration = weeksVapingDuration + (parseFloat(currWeeksVapes[i].duration) || 0); 
+          if(new Date(currWeeksVapes[i].vapedAt).toDateString() === Date.today().toDateString()){
+            todaysVapingDuration = todaysVapingDuration + (parseFloat(currWeeksVapes[i].duration) || 0);
+          }
+        }
+      } else {
+        weeksVapingDuration = weeksVapingDuration + (parseFloat(currWeeksVapes[i].duration) || 0); 
+        if(new Date(currWeeksVapes[i].vapedAt).toDateString() === Date.today().toDateString()){
+          todaysVapingDuration = todaysVapingDuration + (parseFloat(currWeeksVapes[i].duration) || 0);
+        }
+      }
+    } 
+  }// loops through last five days vapes and calulates totals
+  for (var i = 1, l = lastFiveDaysVapes.length; i < l; i ++){
+    if(isNaN(parseFloat(lastFiveDaysVapes[i].duration)) === false){
+      if(config.vapeFilter) {
+        if(parseFloat(lastFiveDaysVapes[i].duration >= config.vape_duration_cutoff)){
+          lastFiveDaysVapingDuration = lastFiveDaysVapingDuration + (parseFloat(lastFiveDaysVapes[i].duration) || 0);
+        }
+      } else {
+        lastFiveDaysVapingDuration = lastFiveDaysVapingDuration + (parseFloat(lastFiveDaysVapes[i].duration) || 0);
+      }
+    }
+  }

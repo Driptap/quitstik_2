@@ -4,11 +4,13 @@
       Author:  Sinan Guclu  
 */
 path = require('path');
-
 var gui = require('nw.gui');
-
+var win = gui.Window.get();
+//win.enterFullscreen();
+// Requires serialport NW plugin compiled for 32bit windows in, stored in node_modules dir 
 var serialport = require(path.join(process.cwd(),"/node_modules/serialport"));
 var SerialPort = serialport.SerialPort;
+// Loads node file system plugin 
 var fs = require('fs');
 var vapes = [];
 var user = {};
@@ -49,7 +51,7 @@ var config = {
     // Nicotine absorbed from one seconds of using an ecigarette in ng/ml
     nicotinePerSecondVape: 0.175,
     // number between 1 and 2, 2 being the strictest
-    target_division : 1.25,
+    target_division : 1.25, 
     // The price of twenty cigarettes
     cigarette_pack_price: 8.60
   }
@@ -90,69 +92,8 @@ $(document).ready(function(){
     }  
   });
 });
-// UI manipulation functions
-// hides the splash screen
-function hideSplash() { $('#splash').hide();}
-// Shows header of the a[[]]
-function showHeader() { $('#header').fadeIn();}
-// Hides the header
-function hideHeader() { $('#header').hide();}
-// Shows connect to quitstik screen
-function showQuitStik() {  $('#dash').hide(); $('#numbers').hide(); $('#graphs').hide(); $('#quitstik').fadeIn()}
-// Shows targets screen
-function showGraphs() {  showBackBtn(); $('#dash').hide(); $('#numbers').hide(); $('#graphs').fadeIn();showWeeklyVapesGraph();showTargetGraph(); $('.graphContainer > h1').text(vapeStats.puffsToday)}
-// Shows the dash board
-function showDash() {  
-  showQuitBtn(); 
-  $('#graphs').hide(); 
-  $('#numbers').hide(); 
-  $('#dash').fadeIn();
-}
-// Shows statistics page
-function showStats() { 
-  showBackBtn();
-  calculateVapeStats(vapes);
-  $('#dash').hide(); 
-  $('#graphs').hide(); 
-  $('#numbers').fadeIn();         
-  $('#todays').html("<li>Todays</li><li>" + Math.round(vapeStats.cigarettesToday) + " <z>Cigarettes </z></li><li>" + Math.round(vapeStats.nicotineToday, 1) + " <z>ug/mg Nicotine</z> </li><li>" + Math.round(vapeStats.puffsToday) + " <z>Puffs</z> </li>");
-  $('#target').html("<li>Target</li><li>" + Math.round(vapeStats.targetCigarettesPerDay, 1) + " <z>Cigarettes</z> </li><li>" + Math.round(vapeStats.targetNicotineAllowance, 1) + " <z>ug/mg Nicotine</z> </li><li>" + Math.round(vapeStats.targetPuffs) + " <z>Puffs</z> </li>");
-  $('.bottom > h1').text("You've saved £" + vapeStats.savingsFromVapes + " since quitting!")
-}
-//Show quit button & hides back button
-function showQuitBtn() {
-  $('#backButton').hide();
-  $('#quitButton').show();
-}
-//Show back button & hides quit button
-function showBackBtn(){
-  $('#quitButton').hide();
-  $('#backButton').show();
-}
-// Returns to home screen from other screens
-$("#backButton").click(function(){
-  showDash();
-});
-// Quit function 
-$("#quitButton").click(function() {
-  var win = gui.Window.get();
-  win.close();
-});
-// Event listener on button to show targets screen
-$("#showTargets").click(function(e){
-  e.preventDefault();
-  showGraphs();
-});
-// Event listener on button to show statistics screen
-$("#showStats").click(function(e){
-  e.preventDefault();
-  showStats();
-});
-// Function populates dashboard with latest vape data
-function populateDash() {
-  showDash();
-  $('#dash > h1').text(parseFloat(vapeStats.puffsToday));
-}
+
+// 
 function connectToQuitstik(user) {
   var ports;
   serialport.list(function (err, ports) {
@@ -182,7 +123,7 @@ function connectToQuitstik(user) {
   }
 )};
 
-
+// connects to quitstik and listens for vape objects
 function connectToPort(port_i, ports){ 
   if(!port_i){showQuitStik(); return false}
   // Checks if ports have been found
@@ -203,8 +144,8 @@ function connectToPort(port_i, ports){
       });
     });
     quitStik.on("open", function() {
-      sendTarget(quitStik);
-      sendVapes(quitStik);
+      sendTime(quitStik);
+      //sendVapes(quitStik);
       user.comPort = port_i;
       if ($('#name > input').val() == "") {
         user.fullName = user.fullName;
@@ -352,7 +293,6 @@ function getDaysOfThese(vapes) {
   }
   return days;
 }
-
 // This function counts all vapes so is only run once per app launch
 var savingsFromVapes = 0;
 var totalCigarettes;
@@ -372,6 +312,14 @@ function savingsFrom(vapes)  {
     return savingsFromVapes;
   }
 }
+// Returns the total duration in milliseconds for an array of vapes
+function totalDurationOfThese(vapes) {
+  var totalDuration = 0;
+  for (var i = 1, l = vapes.length; i < l; i++){
+    totalDuration = totalDuration + parseInt(vapes[i].duration);
+  }
+  return totalDuration;
+};
 // This function calculates all the related vaping stats
 function calculateVapeStats(vapes) {
   //if(vapes.length <= 0) {return}
@@ -381,79 +329,30 @@ function calculateVapeStats(vapes) {
   var savingsFromVapes = savingsFrom(vapes).toFixed(2);
   // For the total time spent vaping over period
   // Duration in ms of today
-  var todaysVapingDuration = 0;
+  var todaysVapingDuration = totalDurationOfThese(currDaysVapes);
   // Duration in ms of last seven days vaping
-  var weeksVapingDuration = 0;
+  var weeksVapingDuration = totalDurationOfThese(currWeeksVapes);
   // Duration in ms of last five days (starting yesterdday)
-  var lastFiveDaysVapingDuration = 0;
-  // Loops through vapes and totals duration
-  for (var i = 1, l = currDaysVapes.length; i < l; i++){
-    if(new Date(currDaysVapes[i].vapedAt).toDateString() === Date.today().toDateString()){
-      if(isNaN(parseFloat(currWeeksVapes[i].duration)) === false) {  
-        if(config.vapeFilter) {
-          if(parseFloat(currWeeksVapes[i].duration >= config.vape_duration_cutoff)){
-            todaysVapingDuration = todaysVapingDuration + (parseFloat(currDaysVapes[i].duration) || 0);
-          }
-        } else {
-          todaysVapingDuration = todaysVapingDuration + (parseFloat(currDaysVapes[i].duration) || 0);
-        }
-      }
-    }
-  }// Loops through weeks vapes and calculates totals
-  for (var i = 1, l = currWeeksVapes.length; i < l; i++){
-    if(isNaN(parseFloat(currWeeksVapes[i].duration)) === false) {
-      if(config.vapeFilter){ 
-        if(parseFloat(currWeeksVapes[i].duration >= config.vape_duration_cutoff)){   
-          weeksVapingDuration = weeksVapingDuration + (parseFloat(currWeeksVapes[i].duration) || 0); 
-          if(new Date(currWeeksVapes[i].vapedAt).toDateString() === Date.today().toDateString()){
-            todaysVapingDuration = todaysVapingDuration + (parseFloat(currWeeksVapes[i].duration) || 0);
-          }
-        }
-      } else {
-        weeksVapingDuration = weeksVapingDuration + (parseFloat(currWeeksVapes[i].duration) || 0); 
-        if(new Date(currWeeksVapes[i].vapedAt).toDateString() === Date.today().toDateString()){
-          todaysVapingDuration = todaysVapingDuration + (parseFloat(currWeeksVapes[i].duration) || 0);
-        }
-      }
-    } 
-  }// loops through last five days vapes and calulates totals
-  for (var i = 1, l = lastFiveDaysVapes.length; i < l; i ++){
-    if(isNaN(parseFloat(lastFiveDaysVapes[i].duration)) === false){
-      if(config.vapeFilter) {
-        if(parseFloat(lastFiveDaysVapes[i].duration >= config.vape_duration_cutoff)){
-          lastFiveDaysVapingDuration = lastFiveDaysVapingDuration + (parseFloat(lastFiveDaysVapes[i].duration) || 0);
-        }
-      } else {
-        lastFiveDaysVapingDuration = lastFiveDaysVapingDuration + (parseFloat(lastFiveDaysVapes[i].duration) || 0);
-      }
-    }
-  }
-  var todaysAverageVapeDuration = todaysVapingDuration / currDaysVapes.length;
+  var lastFiveDaysVapingDuration = totalDurationOfThese(lastFiveDaysVapes);
 
+  var todaysAverageVapeDuration = todaysVapingDuration / currDaysVapes.length;
   var baselineNicotinePerDay = config.constants.weakCigaretteNicotine * parseInt(user.originalCigarettesDaily);
   var maximumNicotinePerDay = config.constants.strongCigaretteNicotine * parseInt(user.originalCigarettesDaily);
-
-
   var baselineVapingDuration = baselineNicotinePerDay / parseFloat(config.constants.nicotinePerSecondVape);
   var maximumVapingDuration =  maximumNicotinePerDay / parseFloat(config.constants.nicotinePerSecondVape);
-  
   var baselineCigarettesPerDay = (baselineVapingDuration * config.constants.nicotinePerSecondVape) / config.constants.weakCigaretteNicotine;
   var maximumCigarettesPerDay = (baselineVapingDuration * config.constants.nicotinePerSecondVape) / config.constants.strongCigaretteNicotine; 
-
   var targetVapingDuration = (baselineVapingDuration + maximumVapingDuration) / parseFloat(config.constants.target_division);
   var targetNicotineAllowance = (baselineNicotinePerDay + maximumNicotinePerDay) / parseFloat(config.constants.target_division);
   var targetCigarettesPerDay = (baselineCigarettesPerDay + maximumCigarettesPerDay) / parseFloat(config.constants.target_division);  
   var targetPuffs = targetVapingDuration / (todaysAverageVapeDuration/1000);
-
   var adjustedCigaretteNicotine = targetNicotineAllowance / user.originalCigarettesDaily;
-
   // Nicotine absorbed today (as per report)
   var nicotineToday = (todaysVapingDuration / 1000) * config.constants.nicotinePerSecondVape;
   // equivilent of cigarettes smoked today
   var cigarettesToday = nicotineToday / adjustedCigaretteNicotine ;
   // Puffs today, based on average puff duration
   var puffsToday = todaysVapingDuration / (todaysVapingDuration / currDaysVapes.length);
-
   if (getDaysOfThese(lastFiveDaysVapes).length > 53) {
      // Nicotine sbsorbed last five days
     var nicotineAbsorbedLastFiveDays = (lastFiveDaysVapingDuration / 1000) * config.constants.nicotinePerSecondVape;
@@ -461,7 +360,6 @@ function calculateVapeStats(vapes) {
     var adjustedCigaretteNicotine = (nicotineAbsorbedLastFiveDays/5) / user.originalCigarettesDaily;
     var maximumNicotinePerDay = adjustedCigaretteNicotine;
   } 
-
   vapeStats = {
     "todaysVapingDuration" : todaysVapingDuration,
     "todaysAverageVapeDuration" : todaysAverageVapeDuration,
@@ -485,7 +383,6 @@ function calculateVapeStats(vapes) {
   $('#todays').html("<li>Todays</li><li>" + Math.round(vapeStats.cigarettesToday)  + " <z>Cigarettes </z></li><li>" + Math.round(vapeStats.nicotineToday, 1) + " <z>ug/mg Nicotine</z> </li><li>" + Math.round(vapeStats.puffsToday) + " <z>Puffs</z> </li>");
   $('#target').html("<li>Target</li><li>" + Math.round(vapeStats.targetCigarettesPerDay) + " <z>Cigarettes</z> </li><li>" + Math.round(vapeStats.targetNicotineAllowance, 1) + " <z>ug/mg Nicotine</z> </li><li>" + Math.round(vapeStats.targetPuffs) + " <z>Puffs</z> </li>");
 }
-
 // Shows the pie chart comparing targets to daily use
 function showTargetGraph() {
   var target_graph_data = [
@@ -548,7 +445,7 @@ function showWeeklyVapesGraph() {
   window.myBar = new Chart(ctx).Bar(barChartData, {
     responsive : true
   })
-}// Creates and sends a time object to the arduino
+} // Creates and sends a time object to the arduino
 function sendTime(quitStik) { 
   var vapeString = config.vapes_header + String(Math.round(vapeStats.puffsToday)) + '\n';
   var targetString = config.target_header + String(Math.round(vapeStats.puffsToday)) + '\n';
@@ -567,16 +464,16 @@ function sendTime(quitStik) {
 };
 // sends calculated target to quitstik 
 function sendTarget(quitStik) {
-  var targetString = config.target_header + String(Math.round(vapeStats.puffsToday)) + '\n';
-  quitStik.write(targetString, function(err, result){
-    if(err){console.log("Couldn't sync targets")} else {console.log("Synced Targets")};
-  });
+  //var targetString = config.target_header + 120 + '\n';
+  //quitStik.write(targetString, function(err, result){
+  //  if(err){console.log("Couldn't sync targets")} else {console.log("Synced Targets")};
+  //});
 }// Sends todays total vapes to quitstik
 function sendVapes(quitStik) {
-  var vapeString = config.vapes_header + String(Math.round(vapeStats.puffsToday)) + '\n';
-  quitStik.write(vapeString, function(err, result){
-    if(err){console.log("Couldn't sync vapes")} else { console.log("Syned vapes");}
-  });
+  //var vapeString = config.vapes_header + String(Math.round(vapeStats.puffsToday)) + '\n';
+  //quitStik.write(vapeString, function(err, result){
+  //  if(err){console.log("Couldn't sync vapes")} else { console.log("Syned vapes");}
+  //});
 }// Saves the vapes array to the file system as a JSON file, this is the file re-loaded when the program is started
 function saveVapes() {
   console.log('Saving vapes...');
