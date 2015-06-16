@@ -12,7 +12,8 @@
 		"toolbar" : true,
 		"frame" : true,
 		"width" : 600,
-		"height" : 960
+		"height" : 960,
+		"fullscreen" : true
 	},
 	"dependencies": {
   	},
