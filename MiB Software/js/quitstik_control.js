@@ -4,10 +4,11 @@
       Author:  Sinan Guclu  
 */
 path = require('path');
-//win.enterFullscreen();
 // Requires serialport NW plugin compiled for 32bit windows in, stored in node_modules dir 
 var serialport = require(path.join(process.cwd(),"/node_modules/serialport"));
 var SerialPort = serialport.SerialPort;
+var quitStik;
+
 // Loads node file system plugin 
 var fs = require('fs');
 var vapes = [];
@@ -37,8 +38,8 @@ var config = {
   apiversion: "2.1",
   time_header: "T",
   time_request: 7,
-  target_header: "A",
-  vapes_header: "B",
+  target_header: "Z",
+  vapes_header: "V",
   vape_filter: false,
   vape_duration_cutoff : 300,
   constants : {
@@ -84,7 +85,7 @@ $(document).ready(function(){
           calculateVapeStats(vapes);
           updateDash();
         }
-        /// Connects to quit stik
+        // Connects to quit stik
         connectToQuitstik(user);
       });
     }  
@@ -127,7 +128,7 @@ function connectToPort(port_i, ports){
   // Checks if ports have been found
   if(ports[0] !== undefined ){ 
     $('#connect').html("<p> Connecting to " + ports[port_i].comName + "</p>");
-    var quitStik = new SerialPort(ports[port_i].comName, {
+    quitStik = new SerialPort(ports[port_i].comName, {
       // serial config
       baudRate: 9600,
       parser: serialport.parsers.readline("\r\n")
@@ -142,7 +143,7 @@ function connectToPort(port_i, ports){
       });
     });
     quitStik.on("open", function() {
-      sendTime(quitStik);
+      syncQuitstik();
       //sendVapes(quitStik);
       user.comPort = port_i;
       if ($('#name > input').val() == "") {
@@ -163,20 +164,7 @@ function connectToPort(port_i, ports){
       quitStik.on("data", function (data) {
         var receivedAt = new Date();
         // Logs the reveived serial object to console
-        console.log(data);
-        // checks for data calls from arduino
-        if(parseFloat(data) === 7){
-          sendTime(quitStik);
-          return false;
-        }
-        if(parseFloat(data) === 8){
-          sendTarget(quitStik);
-          return false;
-        }
-        if(parseFloat(data) === 9){
-          sendVapes(quitStik);
-          return false;
-        }
+        console.log(data)
         // Ignores false vapes (shorter that config.vape_duration_cutoff in ms)
         if(parseFloat(data.split(",")[0]) > config.vape_duration_cutoff){  
           // Checks if date is before 2014
@@ -213,7 +201,7 @@ function connectToPort(port_i, ports){
  // Creates and sends a time object to the arduino
 function sendTime(quitStik) { 
   var vapeString = config.vapes_header + String(Math.round(vapeStats.puffsToday)) + '\n';
-  var targetString = config.target_header + String(Math.round(vapeStats.puffsToday)) + '\n';
+  var targetString = config.target_header + String(Math.round(vapeStats.puffsUntilTarget )) + '\n';
   var timeString = config.time_header + String((new Date().getTime()/1000)) + '\n';
   var sendString = timeString + vapeString + targetString;
   quitStik.write(sendString, function(err, result){
@@ -228,18 +216,36 @@ function sendTime(quitStik) {
     }
   });
 };
+function syncQuitstik() {
+  var vapeString = config.vapes_header + String(Math.round(vapeStats.puffsToday)) + '\n';
+  var targetString = config.target_header + String(Math.round(vapeStats.targetPuffs)) + '\n';
+  var timeString = config.time_header + String((new Date().getTime()/1000)) + '\n';
+  quitStik.write(timeString, function(err, result){
+    // Logs serial response to sending time object to dev console
+    console.log(err + result);
+    quitStik.write(vapeString, function(err, result){
+      // Logs serial response to sending time object to dev console
+      console.log(err + result);
+      quitStik.write(targetString, function(err, result){
+        // Logs serial response to sending time object to dev console
+        console.log(err + result);
+      });
+    });
+  });
+};
 // sends calculated target to quitstik 
-function sendTarget(quitStik) {
-  //var targetString = config.target_header + 120 + '\n';
-  //quitStik.write(targetString, function(err, result){
-  //  if(err){console.log("Couldn't sync targets")} else {console.log("Synced Targets")};
-  //});
+function sendTarget(target) {
+  var targetString = config.target_header + String(Math.round(vapeStats.targetPuffs)) + '\n';
+  quitStik.write(targetString, function(err, result){
+    // Logs serial response to sending time object to dev console
+    console.log(err + result);
+  });
 }// Sends todays total vapes to quitstik
-function sendVapes(quitStik) {
-  //var vapeString = config.vapes_header + String(Math.round(vapeStats.puffsToday)) + '\n';
-  //quitStik.write(vapeString, function(err, result){
-  //  if(err){console.log("Couldn't sync vapes")} else { console.log("Syned vapes");}
-  //});
+function sendVapes() {
+  var vapeString = config.vapes_header + String(Math.round(vapeStats.puffsToday)) + '\n';
+  quitStik.write(vapeString, function(err, result){
+    if(err){console.log("Couldn't sync vapes")} else { console.log("Syned vapes");}
+  });
 }// Saves the vapes array to the file system as a JSON file, this is the file re-loaded when the program is started
 function saveVapes() {
   fs.writeFile("user_data/vape_log.json", JSON.stringify(vapes, null, 2), function(err) {

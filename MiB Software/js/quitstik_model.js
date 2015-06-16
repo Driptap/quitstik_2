@@ -144,6 +144,7 @@ function calculateVapeStats(vapes) {
     var adjustedCigaretteNicotine = (nicotineAbsorbedLastFiveDays/5) / user.originalCigarettesDaily;
     var maximumNicotinePerDay = adjustedCigaretteNicotine;
   } 
+  var puffsUntilTarget = targetPuffs - puffsToday;
   vapeStats = {
     "todaysVapingDuration" : todaysVapingDuration,
     "todaysAverageVapeDuration" : todaysAverageVapeDuration,
@@ -161,7 +162,8 @@ function calculateVapeStats(vapes) {
     "maximumNicotinePerDay" : maximumNicotinePerDay,
     "baselineVapingDuration" : baselineVapingDuration,
     "maximumVapingDuration" : maximumVapingDuration,
-    "savingsFromVapes" : savingsFromVapes
+    "savingsFromVapes" : savingsFromVapes,
+    "puffsUntilTarget" : puffsUntilTarget
   }
   // Updates the vape statistics screen
   updateStats();
