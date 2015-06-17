@@ -1,5 +1,5 @@
 {
-  "comPort": 0,
+  "comPort": "0",
   "fullName": "Sinan",
   "originalCigarettesDaily": "10"
 }

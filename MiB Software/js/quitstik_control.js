@@ -186,6 +186,9 @@ function connectToPort(port_i, ports){
             "vapedAt"  : vapedAt,
             "receivedAt" : receivedAt
           };
+          if (vape.duration > 6000) {
+            vape.duration = 5000;
+          }
           //adds to vapes array
           vapes.push(vape);
           // Recalculates of vape statistics
@@ -223,26 +226,18 @@ function syncQuitstik() {
   quitStik.write(timeString, function(err, result){
     // Logs serial response to sending time object to dev console
     console.log(err + result);
-    quitStik.write(vapeString, function(err, result){
-      // Logs serial response to sending time object to dev console
-      console.log(err + result);
-      quitStik.write(targetString, function(err, result){
-        // Logs serial response to sending time object to dev console
-        console.log(err + result);
-      });
-    });
   });
 };
 // sends calculated target to quitstik 
 function sendTarget(target) {
-  var targetString = config.target_header + String(Math.round(vapeStats.targetPuffs)) + '\n';
+  var targetString = config.target_header + String(parseInt(vapeStats.targetPuffs)) + '\n';
   quitStik.write(targetString, function(err, result){
     // Logs serial response to sending time object to dev console
     console.log(err + result);
   });
 }// Sends todays total vapes to quitstik
 function sendVapes() {
-  var vapeString = config.vapes_header + String(Math.round(vapeStats.puffsToday)) + '\n';
+  var vapeString = config.vapes_header + String(parseInt(vapeStats.puffsToday)) + '\n';
   quitStik.write(vapeString, function(err, result){
     if(err){console.log("Couldn't sync vapes")} else { console.log("Syned vapes");}
   });
