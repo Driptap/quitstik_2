@@ -11,7 +11,7 @@ function hideHeader() { $('#header').hide();}
 // Shows connect to quitstik screen
 function showQuitStik() {  $('#dash').hide(); $('#numbers').hide(); $('#graphs').hide(); $('#quitstik').fadeIn()}
 // Shows targets screen
-function showGraphs() {  showBackBtn(); $('#dash').hide(); $('#numbers').hide(); $('#graphs').fadeIn();showWeeklyVapesGraph();showTargetGraph(); $('.graphContainer > h1').text(vapeStats.puffsToday)}
+function showGraphs() {  showBackBtn(); $('#dash').hide(); $('#numbers').hide(); $('#graphs').fadeIn();showWeeklyVapesGraph();showTargetGraph(); $('.graphContainer > div > h1').text(parseInt(vapeStats.puffsToday))}
 // Shows the dash board
 function showDash() {  
   showQuitBtn(); 
@@ -43,7 +43,7 @@ function showBackBtn(){
 // Function updates dashboard with latest vape data
 function updateDash() {
   showDash();
-  $('#dash > h1').text(parseFloat(vapeStats.puffsToday));
+  $('#dash > h1').text(parseInt(vapeStats.puffsToday));
 }
 // Function updates the details of the statistics page
 function updateStats() {

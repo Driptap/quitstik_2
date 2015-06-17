@@ -308,33 +308,40 @@ ul > li {
   background: #FBC599;
   display: block;
   width: 100%;
-  max-width: 600px;
   height: 450px;
   margin: 0 auto;
   position: absolute;
 }
-.graphContainer > h1 {
+.graphContainer > div > h1 {  
   position: absolute;
-  top: 141px;
-  left: 285px;
+  display: block;
+  margin: 0 auto;
+  left: 47.1%;
+  top: 175px;
   font-family: "Poiret One";
   font-size: 60px;
   color: #F35F55;
 }
-.graphContainer > h4 {
+.graphContainer > div > h4 {
   position: absolute;
-  top: 229px;
-  left: 301px;
+  display: block;
+  margin: 0 auto;
+  left: 49%;
+  top: 240px;
   color: #5A4A4A;
 }
 .graphContainer2 {
   background: #CDBB93;
   display: block;
   width: 100%;
-  max-width: 600px;
   height: 450px;
   margin: 450px auto 0;
   position: absolute;
+}
+.newContainer {
+  width: 600px;
+  display: block;
+  margin: 15px auto;
 }
 span{
   display: block;
@@ -354,7 +361,8 @@ span{
   background: #335650;
 }
 .span2{
-  left: 400px;
+  right: 100px;
+  left: auto;
 }
 #graphs {
   display: none;
