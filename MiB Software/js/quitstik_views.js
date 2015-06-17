@@ -94,25 +94,37 @@ function showTargetGraph() {
 };
 // Shows the barchart with the past weeks vapes
 function showWeeklyVapesGraph() { 
-  var currWeeksVapes = getThisWeeks(vapes); 
+  var currWeeksVapes = getLastFiveDays(vapes); 
   //currWeeksVapes.sort 
   // Array of labels for graph
   var labels = [];
   // Array of durations for graph
   var durations = []; 
+
+  var d = new Date();
+  var weekday = new Array(7);
+  weekday[0]=  "Sunday";
+  weekday[1] = "Monday";
+  weekday[2] = "Tuesday";
+  weekday[3] = "Wednesday";
+  weekday[4] = "Thursday";
+  weekday[5] = "Friday";
+  weekday[6] = "Saturday";
+
+
   // loops through each vape entry
   for (var i = 1, l = currWeeksVapes.length; i < l; i++){
     // checks if hour has been added to already
-    if($.inArray(new Date(currWeeksVapes[i].vapedAt).toDateString(), labels) == -1){
+    if($.inArray(weekday[new Date(currWeeksVapes[i].vapedAt).getDay()], labels) == -1){
       // adds day label and duration at same index when hour label doesn't exist
-      labels.push(new Date(currWeeksVapes[i].vapedAt).toDateString());
+      labels.push(weekday[new Date(currWeeksVapes[i].vapedAt).getDay()]);
       // for puffs
-      durations.push(parseFloat(currWeeksVapes[i].duration) / (vapeStats.todaysAverageVapeDuration/1000) || 0);
+      durations.push((parseFloat(currWeeksVapes[i].duration)/1000) / (vapeStats.todaysAverageVapeDuration/1000) || 0);
     } else {
       // adds duration to duration at index of corresponding label
-      var vapesDay = new Date(currWeeksVapes[i].vapedAt).toDateString();
+      var vapesDay = weekday[new Date(currWeeksVapes[i].vapedAt).getDay()];
       var duration = labels.indexOf(vapesDay);
-      durations[duration] = parseInt(durations[duration] + parseFloat(currWeeksVapes[i].duration) / (vapeStats.todaysAverageVapeDuration/1000) || 0); 
+      durations[duration] = parseInt(durations[duration] + (parseFloat(currWeeksVapes[i].duration)/1000) / (vapeStats.todaysAverageVapeDuration/1000) || 0); 
     }
   }
   var barChartData = {
