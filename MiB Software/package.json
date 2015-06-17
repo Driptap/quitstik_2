@@ -13,7 +13,7 @@
 		"frame" : true,
 		"width" : 600,
 		"height" : 960,
-		"fullscreen" : false
+		"fullscreen" : true
 	},
 	"dependencies": {
   	},
